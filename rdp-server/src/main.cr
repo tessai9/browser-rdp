@@ -6,7 +6,18 @@ ws_handler = HTTP::WebSocketHandler.new do |ws, ctx|
 
   ws.on_message do |message|
     puts "received: " + message
-  end
+
+    # Run ffmpeg for taking screenshot
+    Process.run("ffmpeg", args: ["-f", "x11grab", "-i", ":0.0", "-vframes", "1", "-q:v", "2", "screenshot.jpg", "-y"], output: IO:Memory.new, error: IO:Memory.new)
+
+    # read image as binary
+    bytes = File.read_bytes("screenshot.jpg")
+    puts "read image as binary!"
+
+    # send to client
+    ws.send(bytes)
+    puts "send image to client"
+  End
 
   ws.on_close do
     puts "connection closed"
